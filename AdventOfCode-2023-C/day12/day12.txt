@@ -1,0 +1,2 @@
+programme ne fonctionnant pas 
+Je n'ai pas réussi à le faire sans passer par de la brute force, ce qui ne marche pas avec les données d'input
