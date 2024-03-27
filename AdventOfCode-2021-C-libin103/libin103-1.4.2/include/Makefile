@@ -1,0 +1,7 @@
+include ../Makefile.common
+
+all:
+
+clean:
+	@rm -f *~
+	@rm -f $(LIST_HEADER) $(STACK_HEADER) $(QUEUE_HEADER) $(SET_HEADER) $(HEAP_HEADER) $(BITREE_HEADER) $(BITREEALG_HEADER) $(BISTREE_HEADER) $(GRAPH_HEADER) $(GRAPHALG_HEADER)

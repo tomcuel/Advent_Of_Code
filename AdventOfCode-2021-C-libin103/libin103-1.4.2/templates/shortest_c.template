@@ -1,0 +1,196 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+
+#include "<NAME>_graph.h"
+#include "<NAME>_graphalg.h"
+#include "generic_list.h"
+#include "generic_set.h"
+#include "integer_uf.h"
+#include "generic_heap.h"
+
+/* WARN: Works only for integers !!! */
+
+
+
+/* This order has an influence on the building of the heap: heap max or heap min */
+static int compareDEdge (const void* a, const void* b) {
+  ed_t *ed1 = (ed_t*) a;
+  ed_t *ed2 = (ed_t*) b;
+
+  /* To have a heap min reverse order of the conventional order given
+     by strcmp */
+  if (ed1->distance > ed2->distance) {
+    return -1;
+  }
+  else if (ed1->distance < ed2->distance) {
+    return 1;
+  }
+  else {
+    return 0;
+  }
+}
+
+static void* buildDEdge (const void* a) {
+  ed_t *ed1 = (ed_t*) a;
+  ed_t *newEd = malloc (sizeof(ed_t));
+  newEd->vertex = ed1->vertex;
+  newEd->distance = ed1->distance;
+  newEd->parent = ed1->parent;
+
+  return newEd;
+}
+
+static int findHeapIndex (generic_heap_t *heap, <TYPE> elem) {
+  for (int i = 0; i < generic_heap_size(heap); i++) {
+    ed_t *current = (ed_t*) heap->tree[i];
+    if (current ->vertex == elem) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+
+int <NAME>_shortest(<NAME>_graph_t *graph, <TYPE> start, generic_list_t **paths)
+{
+  /* Step 0 : max index of vertices */
+  int maxIndex = INT_MIN;
+  generic_list_elmt_t *vindex = generic_list_head (&(graph->adjlists));
+  for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+    <NAME>_adjlist_t* node = generic_list_data (vindex);
+    if (node->vertex > maxIndex) {
+      maxIndex = node->vertex;
+    }
+  }
+
+  /* Step 1: SOURCE-UNIQUE-INITIALISATION(G, s) */
+  double *distances= malloc((maxIndex+1)*sizeof(double));
+  if (distances == NULL) {
+    return -1;
+  }
+
+  <TYPE> *parent= malloc((maxIndex+1)*sizeof(<TYPE>));
+  if (parent == NULL) {
+    free(distances);
+    return -1;
+  }
+
+  vindex = generic_list_head (&(graph->adjlists));
+  for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+    <NAME>_adjlist_t* node = generic_list_data (vindex);
+    distances[node->vertex] = 1e308;
+    parent[node->vertex] = -1;
+  }
+  distances[start] = 0.0;
+
+  /* Step 2: */
+  *paths = malloc (sizeof (generic_list_t));
+  if (*paths == NULL) {
+    free (distances);
+    free(parent);
+    return -1;
+  }
+  generic_list_init (*paths, NULL, buildDEdge, free);
+
+  /* Step 3: */
+  generic_heap_t heap;
+  generic_heap_init (&heap, compareDEdge, buildDEdge, free);
+
+  vindex = generic_list_head (&(graph->adjlists));
+  for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+    <NAME>_adjlist_t* node = generic_list_data (vindex);
+    ed_t temp;
+    temp.vertex = node->vertex;
+    temp.distance = distances[temp.vertex];
+    temp.parent = parent[temp.vertex];
+
+    generic_heap_insert (&heap, &temp);
+  }
+
+    /* Print heap for lectures !! */
+  /* printf ("Heap after all egdes inserted: "); */
+  /* for (int i = 0; i < generic_heap_size (&heap); i++) { */
+  /*   ed_t* temp = (ed_t*) heap.tree[i]; */
+  /*   if (temp->distance == 1e308) { */
+  /*     printf ("[%d: {+oo, (%d, %d)}], ", i, temp->vertex, temp->parent); */
+  /*   } */
+  /*   else{ */
+  /*     printf ("[%d: {%.1f, (%d, %d)}], ", i, temp->distance, temp->vertex, temp->parent); */
+  /*   } */
+  /* } */
+  /* printf ("END\n\n"); */
+  /* ***** */
+
+
+  /* Step 4: */
+  while (generic_heap_size (&heap) > 0) {
+    /* Step 5: */
+    ed_t *current = malloc (sizeof(ed_t));
+    generic_heap_extract (&heap, (void**)&current);
+
+    /* Print heap for lectures !! */
+    /* printf ("Heap after extraction: "); */
+    /* for (int i = 0; i < generic_heap_size (&heap); i++) { */
+    /*   ed_t* temp = (ed_t*) heap.tree[i]; */
+    /*   if (temp->distance == 1e308) { */
+    /* 	printf ("[%d: {+oo, (%d, %d)}], ", i, temp->vertex, temp->parent); */
+    /*   } */
+    /*   else { */
+    /* 	printf ("[%d: {%.1f, (%d, %d)}], ", i, temp->distance, temp->vertex, temp->parent); */
+    /*   } */
+    /* } */
+    /* printf ("END\n\n"); */
+    /* ***** */
+
+
+    /* Step 6: */
+    generic_list_ins_next (*paths, generic_list_tail(*paths), (void*) current);
+
+    /* Step 7: */
+    vindex = generic_list_head (&(graph->adjlists));
+    for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+      <NAME>_adjlist_t* node = generic_list_data (vindex);
+
+      if (node->vertex == current->vertex) { /* For all neighbors */
+	generic_list_elmt_t* vindex2 = generic_list_head(&(node->adjacent));
+	for (; vindex2 != NULL; vindex2 = generic_list_next(vindex2)) {
+	  integer_adjlist_elmt_t *tempV =
+	    (integer_adjlist_elmt_t *) generic_list_data (vindex2);
+	  /* Step 8: */
+	  if (distances[tempV->vertex] > distances[node->vertex] + tempV->weight) {
+	    distances[tempV->vertex] = distances[node->vertex] + tempV->weight;
+	    parent[tempV->vertex] = node->vertex;
+
+	    /* Update heap */
+	    int index = findHeapIndex (&heap, tempV->vertex);
+	    ed_t updated;
+	    updated.vertex = tempV->vertex;
+	    updated.distance = distances[tempV->vertex];
+	    updated.parent = parent[tempV->vertex];
+	    generic_heap_change_key (&heap, index, (void*) &updated);
+
+	    /* Print heap for lectures !! */
+	    /* printf ("Heap after distance modification: "); */
+	    /* for (int i = 0; i < generic_heap_size (&heap); i++) { */
+	    /*   ed_t* temp = (ed_t*) heap.tree[i]; */
+	    /*   if (temp->distance == 1e308) { */
+	    /* 	printf ("[%d: {+oo, (%d, %d)}], ", i, temp->vertex, temp->parent); */
+	    /*   } */
+	    /*   else { */
+	    /* 	printf ("[%d: {%.1f, (%d, %d)}], ", i, temp->distance, temp->vertex, temp->parent); */
+	    /*   } */
+	    /* } */
+	    /* printf ("END\n\n"); */
+	    /* ***** */
+
+	  }
+	}
+      }
+    }
+
+    free(current);
+  }
+  return 0;
+}

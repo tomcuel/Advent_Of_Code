@@ -1,0 +1,224 @@
+/*! \file <NAME>_graphalg.h
+ *
+ * \brief Liste d'algorithmes sur les graphes
+ *
+ * 1. Parcours de graphes en profondeur d'abord en deux versions
+ * 2. Parcours de graphes en largeur d'abord en deux versions
+ * 3. Algorithme de tri topologique
+ * 4. Algorithme de Kruskal: arbre couvrant de point minimal
+ * 5. Algorithme de Dijkstra: plus court chemin pour un graphe à pondération positive
+ * 6. Algorithme de Edmonds-Karp: flot maximum
+ */
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------ graphalg.h ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+#ifndef __<NAME>_GRAPHALG_H__
+#define __<NAME>_GRAPHALG_H__
+
+#include "graph.h"
+#include "list.h"
+
+/* For Kruskal's algorithm */
+/*! \brief Type de données internes pour l'algorithme de de forêt
+ * couvrante de poids minimal. Cette structure de données est utilisée
+ * dans le résultat produit par l'algorithme de Kruskal. Il décrit les
+ * différentes arêtes composants l'arbre couvrant
+ */
+typedef struct {
+  <TYPE> source; /**< sommet source de l'arête */
+  <TYPE> destination; /**< sommet destination de l'arête */
+  double weight; /**< poids de l'arête */
+} we_t;
+
+/* For Dijkstra's algorithm */
+/*! \brief Type de données internes pour l'algorithme de de plus
+ * courts chemins. Cette structure de données est utilisée dans le
+ * résultat produit par l'algorithme de Kruskal. Il décrit les
+ * différents points de passage pour atteindre un sommet.
+ */
+typedef struct {
+  <TYPE> vertex; /**< sommet destination */
+  double distance; /**< cout du chemin du sommet destination depuis le sommet parent */
+  <TYPE> parent; /**< sommet source (ou parent) */
+} ed_t;
+
+
+/*****************************************************************************
+*                                                                            *
+*  --------------------------- Public Interface ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+/* Depth-first search */
+/*! \brief Parcours en profondeur d'abord d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Parcours d'un graphe en profondeur à partir d'un sommet donné
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param start sommet de départ pour le parcours en profondeur d'abord
+ *
+ * @param ordered liste des sommets parcourus dans l'ordre du parcours
+ * en profondeur (<b>Remarque</b> cette liste peut ne pas contenir tous
+ * les sommets du graphe)
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_dfs(<NAME>_graph_t *graph,
+	       <TYPE> start,
+	       <NAME>_list_t *ordered);
+
+/*! \brief Parcours en profondeur d'abord d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Parcours d'un graphe en profondeur à partir du début de la liste
+ * d'adjacence. Pour chaque sommet on éxécute un parcours en
+ * profondeur.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param ordered liste des sommets parcourus dans l'ordre du parcours
+ * en profondeur.
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_dfs_all(<NAME>_graph_t *graph,
+		   <NAME>_list_t *ordered);
+
+/* Breadth-first search */
+/*! \brief Parcours en largeur d'abord d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Parcours d'un graphe en largeur à partir d'un sommet donné
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param start sommet de départ pour le parcours en largeur d'abord
+ *
+ * @param ordered liste des sommets parcourus dans l'ordre du parcours
+ * en largeur (<b>Remarque</b> cette liste peut ne pas contenir tous
+ * les sommets du graphe)
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_bfs(<NAME>_graph_t *graph,
+	       <TYPE> start,
+	       <NAME>_list_t *ordered);
+
+/*! \brief Parcours en largeur d'abord d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Parcours d'un graphe en largeur à partir du début de la liste
+ * d'adjacence. Pour chaque sommet on éxécute un parcours en
+ * largeur d'abord.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param ordered liste des sommets parcourus dans l'ordre du parcours
+ * en largeur.
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_bfs_all(<NAME>_graph_t *graph,
+		   <NAME>_list_t *ordered);
+
+/* Toplogical sort */
+/*! \brief Effectue un tri topologique d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Parcours d'un graphe à partir du début de la liste
+ * d'adjacence pour réaliser un tri topologique.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param ordered liste des sommets parcourus dans l'ordre du tri topologique
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_ts (<NAME>_graph_t* graph, <NAME>_list_t* ordered);
+
+/* Implementation of Kruskal's algorithm */
+/*! \brief Calcul de l'arbre couvrant de poids minimal d'un graphe
+ * dont les noeuds contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Application de l'algorithme de Kruskal. Dans cet algorithme
+ * l'allocation mémoire de la liste span est réalisée en interne d'où
+ * le double pointeur sur la liste span.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param span liste des arêtes représentant l'arbre couvrant de poids
+ * minimal.
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_mst(<NAME>_graph_t *graph, generic_list_t **span);
+
+/* Implementation of Dijkstra's algorithm */
+/*! \brief Calcul du plus court chemin d'un sommet source vers tous
+ * les autres avec un cout minimal d'un graphe dont les noeuds
+ * contiennent des valeurs de type <b><TYPE></b>
+ *
+ * Application de l'algorithme de Dijkstra donc graphe dirigé avec
+ * poids positifs.  Dans cet algorithme l'allocation mémoire de la
+ * liste paths est réalisée en interne d'où le double pointeur sur la
+ * liste paths.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param start sommet de départ pour calculer les plus courts chemins
+ *
+ * @param paths liste des arêtes composants les chemins les plus courts
+ *  depuis le sommet start vers les autres sommets.
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_shortest(<NAME>_graph_t *graph, <TYPE> start, generic_list_t **paths);
+
+/* Implementation of Edmonds-Karp's algorithm */
+/*! \brief Calcul du flot maximal d'un sommet source vers un sommet
+ * destination d'un graphe dont les noeuds contiennent des valeurs de
+ * type <b><TYPE></b>
+ *
+ * Application de l'algorithme de Edmonds-Karp. Dans cet algorithme
+ * l'allocation mémoire de la matrice localflows est réalisée en
+ * interne d'où le triple pointeur sur la matrice localflows.
+ *
+ * @param graph un pointeur vers une structure de données représentant
+ * un graphe (liste d'adjacence) <NAME>_graph_t
+ *
+ * @param source sommet point de départ
+ *
+ * @param target sommet destination
+ *
+ * @param localflows pointeur vers la matrice des flots entre
+ * chaque couple de sommets contribuant au flot maximal
+ *
+ * @param flow valeur du flot maximal entre la source et la destination
+ *
+ * @return valeur entière indiquant si tout s'est bien passé (0 pour
+ * ok)
+ */
+int <NAME>_maxflow(<NAME>_graph_t *graph, <TYPE> source, <TYPE> target,
+		   double*** localflows, double *flow);
+
+#endif

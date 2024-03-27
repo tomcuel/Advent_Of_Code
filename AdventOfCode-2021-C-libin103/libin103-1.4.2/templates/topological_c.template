@@ -1,0 +1,47 @@
+/*****************************************************************************
+*                                                                            *
+*  -------------------------------- topological.c ---------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+#include <stdlib.h>
+
+#include "graph.h"
+#include "list.h"
+
+static int <NAME>_ts_aux (<NAME>_graph_t* graph, <TYPE> start, <NAME>_set_t* marker, <NAME>_list_t* ordered) {
+
+  if (<NAME>_set_is_member (marker, start)) {
+    return 0;
+  }
+
+  <NAME>_set_insert (marker, start);
+
+  <NAME>_list_t* neighbors = <NAME>_graph_adjlist (graph, start);
+
+  <NAME>_list_elmt_t* elem = <NAME>_list_head (neighbors);
+  for (; elem != NULL; elem = <NAME>_list_next (elem)) {
+    int n = <NAME>_list_data (elem);
+    <NAME>_ts_aux (graph, n, marker, ordered);
+  }
+
+  <NAME>_list_ins_next (ordered, NULL, start);
+  free(neighbors);
+
+  return 0;
+}
+
+
+
+int <NAME>_ts (<NAME>_graph_t* graph, <NAME>_list_t* ordered) {
+  <NAME>_set_t set;
+  <NAME>_set_init (&set);
+
+  generic_list_elmt_t *elem = generic_list_head (&(graph->adjlists));
+  for (; elem != NULL; elem = generic_list_next (elem)) {
+    <NAME>_adjlist_t* node = (<NAME>_adjlist_t*)generic_list_data (elem);
+    <NAME>_ts_aux (graph, node->vertex, &set, ordered);
+  }
+
+  return 0;
+}

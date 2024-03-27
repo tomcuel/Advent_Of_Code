@@ -1,0 +1,63 @@
+#include "list.h"
+#include "queue.h"
+#include "set.h"
+#include "<NAME>_graphalg.h"
+
+static int <NAME>_bfs_aux (<NAME>_graph_t* graph, <TYPE> start, <NAME>_set_t* marker, <NAME>_list_t* ordered) {
+
+  if (<NAME>_set_is_member (marker, start)) {
+    return 0;
+  }
+
+  <NAME>_queue_t queue;
+  <NAME>_queue_init (&queue);
+
+  <NAME>_set_insert (marker, start);
+  <NAME>_queue_enqueue (&queue, start);
+
+  while (<NAME>_queue_size (&queue) > 0) {
+    int vertex;
+    <NAME>_queue_dequeue (&queue, &vertex);
+
+    <NAME>_list_ins_next (ordered, <NAME>_list_tail(ordered), vertex);
+
+    <NAME>_list_t* neighbors = <NAME>_graph_adjlist (graph, vertex);
+
+    <NAME>_list_elmt_t* elem = <NAME>_list_head (neighbors);
+    for (; elem != NULL; elem = <NAME>_list_next (elem)) {
+      int n = <NAME>_list_data (elem);
+      if (!<NAME>_set_is_member (marker, n)) {
+	<NAME>_set_insert (marker, n);
+	<NAME>_queue_enqueue (&queue, n);
+      }
+    }
+
+    free(neighbors);
+  }
+
+  return 0;
+
+}
+
+int <NAME>_bfs (<NAME>_graph_t* graph, <TYPE> start, <NAME>_list_t* ordered) {
+  <NAME>_set_t set;
+  <NAME>_set_init (&set);
+
+  int code = <NAME>_bfs_aux (graph, start, &set, ordered);
+
+  return code;
+}
+
+
+int <NAME>_bfs_all (<NAME>_graph_t* graph, <NAME>_list_t* ordered) {
+  <NAME>_set_t set;
+  <NAME>_set_init (&set);
+
+  generic_list_elmt_t *elem = generic_list_head (&(graph->adjlists));
+  for (; elem != NULL; elem = generic_list_next (elem)) {
+    <NAME>_adjlist_t* node = (<NAME>_adjlist_t*)generic_list_data (elem);
+    <NAME>_bfs_aux (graph, node->vertex, &set, ordered);
+  }
+
+  return 0;
+}

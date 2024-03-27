@@ -1,0 +1,51 @@
+debug=false
+
+LIST_HEADER=integer_list.h real_list.h character_list.h
+LIST_SRC=integer_list.c real_list.c character_list.c
+LIST_OBJ=$(patsubst %.c, %.o, $(LIST_SRC))
+LISTS=$(LIST_HEADER) $(LIST_SRC)
+
+STACK_HEADER=integer_stack.h real_stack.h character_stack.h
+STACK_SRC=integer_stack.c real_stack.c character_stack.c
+STACK_OBJ=$(patsubst %.c, %.o, $(STACK_SRC))
+STACKS=$(STACK_HEADER) $(STACK_SRC)
+
+QUEUE_HEADER=integer_queue.h real_queue.h character_queue.h
+QUEUE_SRC=integer_queue.c real_queue.c character_queue.c
+QUEUE_OBJ=$(patsubst %.c, %.o, $(QUEUE_SRC))
+QUEUES=$(QUEUE_HEADER) $(QUEUE_SRC)
+
+SET_HEADER=integer_set.h real_set.h character_set.h
+SET_SRC=integer_set.c real_set.c character_set.c
+SET_OBJ=$(patsubst %.c, %.o, $(SET_SRC))
+SETS=$(SET_HEADER) $(SET_SRC)
+
+HEAP_HEADER=integer_heap.h real_heap.h character_heap.h
+HEAP_SRC=integer_heap.c real_heap.c character_heap.c
+HEAP_OBJ=$(patsubst %.c, %.o, $(HEAP_SRC))
+HEAPS=$(HEAP_HEADER) $(HEAP_SRC)
+
+BITREE_HEADER=integer_bitree.h real_bitree.h character_bitree.h
+BITREE_SRC=integer_bitree.c real_bitree.c character_bitree.c
+BITREE_OBJ=$(patsubst %.c, %.o, $(BITREE_SRC))
+BITREES=$(BITREE_HEADER) $(BITREE_SRC)
+
+BITREEALG_HEADER=integer_bitreealg.h real_bitreealg.h character_bitreealg.h
+BITREEALG_SRC=integer_bitreealg.c real_bitreealg.c character_bitreealg.c
+BITREEALG_OBJ=$(patsubst %.c, %.o, $(BITREEALG_SRC))
+BITREEALGS=$(BITREEALG_HEADER) $(BITREEALG_SRC)
+
+BISTREE_HEADER=integer_bistree.h real_bistree.h character_bistree.h
+BISTREE_SRC=integer_bistree.c real_bistree.c character_bistree.c
+BISTREE_OBJ=$(patsubst %.c, %.o, $(BISTREE_SRC))
+BISTREES=$(BISTREE_HEADER) $(BISTREE_SRC)
+
+GRAPH_HEADER= integer_graph.h #character_graph.h
+GRAPH_SRC= integer_graph.c #character_graph.c
+GRAPH_OBJ= $(patsubst %.c, %.o, $(GRAPH_SRC))
+GRAPHS= $(GRAPH_HEADER) $(GRAPH_SRC)
+
+GRAPHALG_HEADER= integer_graphalg.h
+GRAPHALG_SRC= integer_bfs.c integer_dfs.c integer_mst.c integer_shortest.c integer_topological.c integer_maxflow.c
+GRAPHALG_OBJ= $(patsubst %.c, %.o, $(GRAPHALG_SRC))
+GRAPHALG= $(GRAPHALG_HEADER) $(GRAPHALG_SRC)

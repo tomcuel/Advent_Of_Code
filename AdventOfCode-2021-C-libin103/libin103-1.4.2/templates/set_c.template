@@ -1,0 +1,270 @@
+/*****************************************************************************
+*                                                                            *
+*  -------------------------------- set.c ---------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+#include <stdlib.h>
+#include <string.h>
+
+#include "<NAME>_list.h"
+#include "<NAME>_set.h"
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------- <NAME>_set_init ------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_set_init(<NAME>_set_t *set) {
+  /* Initialize the set. */
+  <NAME>_list_init(set);
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------- <NAME>_set_destroy ---------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_set_destroy(<NAME>_set_t *set) {
+  /* Destroy the list. */
+  <NAME>_list_destroy(set);
+}
+
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------- <NAME>_set_insert ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_insert(<NAME>_set_t *set, <TYPE> data) {
+
+  /* Do not allow the insertion of duplicates. */
+  if (<NAME>_set_is_member(set, data)) {
+    return 1;
+  }
+
+  /* Insert the data. */
+  return <NAME>_list_ins_next(set, <NAME>_list_tail(set), data);
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------ <NAME>_set_remove -----------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_remove(<NAME>_set_t *set, <TYPE> *data) {
+
+  <NAME>_list_elmt_t *member;
+  <NAME>_list_elmt_t *prev;
+
+  /* Find the member to remove. */
+
+  prev = NULL;
+
+  for (member = <NAME>_list_head(set); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    if (*data == <NAME>_list_data(member)) {
+      break;
+    }
+    prev = member;
+  }
+
+  /* Return if the member was not found. */
+  if (member == NULL) {
+    return -1;
+  }
+
+  /* Remove the member. */
+  return <NAME>_list_rem_next(set, prev, data);
+
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------ <NAME>_set_union ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_union(<NAME>_set_t *setu, const <NAME>_set_t *set1, const <NAME>_set_t *set2) {
+
+  <NAME>_list_elmt_t *member;
+  <TYPE> data;
+
+  /* Initialize the set for the union. */
+  <NAME>_set_init(setu);
+
+  /* Insert the members of the first set. */
+
+  for (member = <NAME>_list_head((<NAME>_list_t*)set1); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    data = <NAME>_list_data(member);
+
+    if (<NAME>_list_ins_next((<NAME>_list_t*)setu, <NAME>_list_tail((<NAME>_list_t*)setu), data) != 0) {
+      <NAME>_set_destroy(setu);
+      return -1;
+    }
+  }
+
+  /* Insert the members of the second set. */
+  for (member = <NAME>_list_head((<NAME>_list_t*)set2); member != NULL;
+       member = <NAME>_list_next(member)) {
+   if (<NAME>_set_is_member(set1, <NAME>_list_data(member))) {
+      /* Do not allow the insertion of duplicates. */
+      continue;
+   }
+   else {
+      data = <NAME>_list_data(member);
+
+      if (<NAME>_list_ins_next(setu, <NAME>_list_tail(setu), data) != 0) {
+         <NAME>_set_destroy(setu);
+         return -1;
+      }
+   }
+  }
+
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  -------------------- <NAME>_set_intersection ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_intersection(<NAME>_set_t *seti, const <NAME>_set_t *set1,
+			    const <NAME>_set_t *set2) {
+
+  <NAME>_list_elmt_t *member;
+  <TYPE> data;
+
+  /* Initialize the set for the intersection. */
+  <NAME>_set_init(seti);
+
+  /* Insert the members present in both sets. */
+  for (member = <NAME>_list_head((<NAME>_list_t*)set1); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    if (<NAME>_set_is_member(set2, <NAME>_list_data(member))) {
+
+      data = <NAME>_list_data(member);
+
+      if (<NAME>_list_ins_next(seti, <NAME>_list_tail(seti), data) != 0) {
+	<NAME>_set_destroy(seti);
+	return -1;
+      }
+    }
+  }
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  --------------------- <NAME>_set_difference ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_difference(<NAME>_set_t *setd, const <NAME>_set_t *set1,
+			  const <NAME>_set_t *set2) {
+
+  <NAME>_list_elmt_t *member;
+  <TYPE> data;
+
+  /* Initialize the set for the difference. */
+  <NAME>_set_init(setd);
+
+  /* Insert the members from set1 not in set2. */
+  for (member = <NAME>_list_head((<NAME>_list_t*)set1); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    if (!<NAME>_set_is_member(set2, <NAME>_list_data(member))) {
+
+      data = <NAME>_list_data(member);
+      if (<NAME>_list_ins_next(setd, <NAME>_list_tail(setd), data) != 0) {
+         <NAME>_set_destroy(setd);
+	return -1;
+      }
+    }
+  }
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ---------------------- <NAME>_set_is_member ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+bool <NAME>_set_is_member(const <NAME>_set_t *set, <TYPE> data) {
+
+  <NAME>_list_elmt_t *member;
+
+  /* Determine if the data is a member of the set. */
+  for (member = <NAME>_list_head((<NAME>_list_t*)set); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    if (data == <NAME>_list_data(member)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ---------------------- <NAME>_set_is_subset ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+bool <NAME>_set_is_subset(const <NAME>_set_t *set1, const <NAME>_set_t *set2) {
+
+  <NAME>_list_elmt_t *member;
+
+  /* Do a quick test to rule out some cases. */
+  if (<NAME>_set_size(set1) > <NAME>_set_size(set2)) {
+    return false;
+  }
+
+  /* Determine if set1 is a subset of set2. */
+  for (member = <NAME>_list_head((<NAME>_list_t*)set1); member != NULL;
+       member = <NAME>_list_next(member)) {
+
+    if (!<NAME>_set_is_member(set2, <NAME>_list_data(member)))
+      return false;
+  }
+
+  return true;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------- <NAME>_set_is_equal ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+bool <NAME>_set_is_equal(const <NAME>_set_t *set1, const <NAME>_set_t *set2) {
+
+  /* Do a quick test to rule out some cases. */
+  if (<NAME>_set_size(set1) != <NAME>_set_size(set2)) {
+   return false;
+  }
+
+  /* Sets of the same size are equal if they are subsets. */
+  return <NAME>_set_is_subset(set1, set2);
+}
+
+/*****************************************************************************
+*                                                                            *
+*  --------------------------- <NAME>_set_size ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_set_size(const <NAME>_set_t *set) {
+    return <NAME>_list_size ((<NAME>_list_t*)set);
+}

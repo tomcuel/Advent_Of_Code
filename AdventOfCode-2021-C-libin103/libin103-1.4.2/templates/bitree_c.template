@@ -1,0 +1,314 @@
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------- bitree.c -------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include "<NAME>_bitree.h"
+
+/*****************************************************************************
+*                                                                            *
+*  ------------------------------ bitree_init -----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_bitree_init(<NAME>_bitree_t *tree) {
+  /* Initialize the binary tree. */
+  tree->size = 0;
+  tree->root = NULL;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ---------------------------- bitree_destroy ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_bitree_destroy(<NAME>_bitree_t *tree) {
+
+  /* Remove all the nodes from the tree. */
+  <NAME>_bitree_rem_left(tree, NULL);
+
+  /* No operations are allowed now, but clear the structure as a precaution. */
+  memset(tree, 0, sizeof(<NAME>_bitree_t));
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ---------------------------- bitree_ins_left ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_bitree_ins_left(<NAME>_bitree_t *tree,
+			   <NAME>_bitreenode_t *node, <TYPE> data) {
+
+  <NAME>_bitreenode_t *new_node;
+  <NAME>_bitreenode_t **position;
+
+  /* Determine where to insert the node. */
+  if (node == NULL) {
+   /* Allow insertion at the root only in an empty tree. */
+    if (<NAME>_bitree_size(tree) > 0) {
+      return -1;
+    }
+    position = &tree->root;
+  }
+  else {
+    /* Normally allow insertion only at the end of a branch. */
+    if (<NAME>_bitree_left(node) != NULL) {
+      return -1;
+    }
+    position = &node->left;
+  }
+
+  /* Allocate storage for the node. */
+  new_node = malloc(sizeof(<NAME>_bitreenode_t));
+  if (new_node == NULL) {
+    return -1;
+  }
+
+  /* Insert the node into the tree. */
+  new_node->data = data;
+  new_node->left = NULL;
+  new_node->right = NULL;
+  *position = new_node;
+
+  /* Adjust the size of the tree to account for the inserted node. */
+  tree->size++;
+
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  --------------------------- bitree_ins_right ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_bitree_ins_right(<NAME>_bitree_t *tree,
+			    <NAME>_bitreenode_t *node, <TYPE> data) {
+
+  <NAME>_bitreenode_t *new_node;
+  <NAME>_bitreenode_t **position;
+
+  /* Determine where to insert the node. */
+  if (node == NULL) {
+   /* Allow insertion at the root only in an empty tree. */
+    if (<NAME>_bitree_size(tree) > 0) {
+      return -1;
+    }
+    position = &tree->root;
+   }
+  else {
+   /* Normally allow insertion only at the end of a branch. */
+    if (<NAME>_bitree_right(node) != NULL) {
+      return -1;
+    }
+    position = &node->right;
+  }
+
+  /* Allocate storage for the node. */
+  new_node = malloc(sizeof(<NAME>_bitreenode_t));
+  if (new_node == NULL) {
+    return -1;
+  }
+  /* Insert the node into the tree. */
+
+  new_node->data = data;
+  new_node->left = NULL;
+  new_node->right = NULL;
+  *position = new_node;
+
+  /* Adjust the size of the tree to account for the inserted node. */
+  tree->size++;
+
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ---------------------------- bitree_rem_left ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_bitree_rem_left(<NAME>_bitree_t *tree, <NAME>_bitreenode_t *node) {
+
+  <NAME>_bitreenode_t        **position;
+
+  /* Do not allow removal from an empty tree. */
+  if (<NAME>_bitree_size(tree) == 0)
+    return;
+
+  /* Determine where to remove nodes. */
+  if (node == NULL) {
+    position = &tree->root;
+  }
+  else {
+    position = &node->left;
+  }
+
+  /* Remove the nodes. */
+  if (*position != NULL) {
+
+   <NAME>_bitree_rem_left(tree, *position);
+   <NAME>_bitree_rem_right(tree, *position);
+
+   free(*position);
+   *position = NULL;
+
+   /* Adjust the size of the tree to account for the removed node. */
+   tree->size--;
+
+  }
+
+  return;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  --------------------------- bitree_rem_right ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+void <NAME>_bitree_rem_right(<NAME>_bitree_t *tree, <NAME>_bitreenode_t *node) {
+
+  <NAME>_bitreenode_t **position;
+
+  /* Do not allow removal from an empty tree. */
+  if (<NAME>_bitree_size(tree) == 0) {
+    return;
+  }
+
+  /* Determine where to remove nodes. */
+  if (node == NULL) {
+    position = &tree->root;
+  }
+  else {
+    position = &node->right;
+  }
+
+  /* Remove the nodes. */
+  if (*position != NULL) {
+
+   <NAME>_bitree_rem_left(tree, *position);
+   <NAME>_bitree_rem_right(tree, *position);
+   free(*position);
+   *position = NULL;
+
+   /* Adjust the size of the tree to account for the removed node. */
+   tree->size--;
+  }
+
+  return;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_merge -----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_bitree_merge(<NAME>_bitree_t *merge, <NAME>_bitree_t *left,
+			<NAME>_bitree_t *right, <TYPE> data) {
+
+  /* Initialize the merged tree. */
+
+  <NAME>_bitree_init(merge);
+
+  /* Insert the data for the root node of the merged tree. */
+  if (<NAME>_bitree_ins_left(merge, NULL, data) != 0) {
+    <NAME>_bitree_destroy(merge);
+    return -1;
+  }
+
+  /* Merge the two binary trees into a single binary tree. */
+  <NAME>_bitree_root(merge)->left = <NAME>_bitree_root(left);
+  <NAME>_bitree_root(merge)->right = <NAME>_bitree_root(right);
+
+  /* Adjust the size of the new binary tree. */
+  merge->size = <NAME>_bitree_size(merge) + <NAME>_bitree_size(left)
+    + <NAME>_bitree_size(right);
+
+  /* Do not let the original trees access the merged nodes. */
+  left->root = NULL;
+  left->size = 0;
+  right->root = NULL;
+  right->size = 0;
+
+  return 0;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_size ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+int <NAME>_bitree_size(<NAME>_bitree_t *tree) {
+  return tree->size;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_root ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+<NAME>_bitreenode_t* <NAME>_bitree_root(<NAME>_bitree_t *tree) {
+  return tree->root;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_is_eob ----------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+bool <NAME>_bitree_is_eob(<NAME>_bitreenode_t *node) {
+  return node==NULL;
+}
+
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_is_leaf ---------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+bool <NAME>_bitree_is_leaf(<NAME>_bitreenode_t *node) {
+  return node->left==NULL && node->right==NULL;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_data ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+<TYPE> <NAME>_bitree_data(<NAME>_bitreenode_t *node) {
+  return node->data;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_left ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+<NAME>_bitreenode_t* <NAME>_bitree_left(<NAME>_bitreenode_t *node) {
+  return node->left;
+}
+
+/*****************************************************************************
+*                                                                            *
+*  ----------------------------- bitree_right ------------------------------  *
+*                                                                            *
+*****************************************************************************/
+
+<NAME>_bitreenode_t* <NAME>_bitree_right(<NAME>_bitreenode_t *node) {
+  return node->right;
+}

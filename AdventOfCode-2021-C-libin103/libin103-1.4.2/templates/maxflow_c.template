@@ -1,0 +1,182 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <limits.h>
+#include <math.h>
+
+#include "<NAME>_graph.h"
+#include "<NAME>_graphalg.h"
+#include "generic_list.h"
+#include "generic_set.h"
+#include "<NAME>_queue.h"
+
+
+/* WARN: Works only for integers !!! */
+
+/* https://complex-systems-ai.com/probleme-de-flot-maximum/algorithme-dedmonds-karp/ */
+
+/* algorithm BreadthFirstSearch
+    input:
+        C, E, s, t, F
+    output:
+        M[t]          (capacité du chemin trouvé)
+        P             (table des parents)
+    P := array(1..n)
+    for u in 1..n
+        P[u] := -1
+    P[s] := -2 (pour assurer que la source n'est pas redécouverte)
+    M := array(1..n) (capacité du chemin trouvé jusqu'au nœud)
+    M[s] := +oo
+    Q := queue()
+    Q.push(s)
+    while Q.size() > 0
+        u := Q.pop()
+        for v in E[u]
+            if C[u,v] - F[u,v] > 0 and P[v] = -1
+                P[v] := u
+                M[v] := min(M[u], C[u,v] - F[u,v])
+                if v != t
+                    Q.push(v)
+                else
+                    return M[t], P
+    return 0, P
+*/
+
+static int maxflow_bfs (<NAME>_graph_t *graph, <TYPE> source, <TYPE> target,
+			double** localflows, double* capacity, <TYPE> *parents, int size) {
+
+  for (int i = 0; i < size; i++) {
+    parents[i] = -1;
+  }
+
+  parents[source] = -2;
+  double pathCapacity[size];
+  pathCapacity[source] = 1e308;
+
+  <NAME>_queue_t queue;
+  <NAME>_queue_init (&queue);
+  <NAME>_queue_enqueue (&queue, source);
+
+  while (<NAME>_queue_size (&queue) > 0) {
+    int current;
+    <NAME>_queue_dequeue (&queue, &current);
+
+    generic_list_elmt_t* vindex = generic_list_head (&(graph->adjlists));
+    for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+      <NAME>_adjlist_t* node = generic_list_data (vindex);
+
+      if (node->vertex == current) { /* For all neighbors */
+	generic_list_elmt_t* vindex2 = generic_list_head(&(node->adjacent));
+	for (; vindex2 != NULL; vindex2 = generic_list_next(vindex2)) {
+	  integer_adjlist_elmt_t *tempV =
+	    (integer_adjlist_elmt_t *) generic_list_data (vindex2);
+
+	  double residual = tempV->weight - localflows[current][tempV->vertex];
+	  if(residual > 0.0 && parents[tempV->vertex] == -1) {
+	      parents[tempV->vertex] = current;
+	      pathCapacity[tempV->vertex] = pathCapacity[current] < residual ? pathCapacity[current] : residual ;
+	      if (tempV->vertex != target) {
+		<NAME>_queue_enqueue (&queue, tempV->vertex);
+	      }
+	      else {
+		*capacity = pathCapacity[target];
+		//		fprintf (stderr, "capacity = %f\n", *capacity);
+		return 0;
+	      }
+	    }
+
+	}
+      }
+    }
+  }
+  *capacity = 0.0;
+  return 0;
+}
+/* Edmonds-Karp'a algorithm */
+/*
+algorithm EdmondsKarp
+    input:
+        C[1..n, 1..n] (matrice des capacités)
+        E[1..n, 1..?] (listes des voisins)
+        s             (source)
+        t             (puits)
+    output:
+        f             (valeur du flot maximum)
+        F             (matrice donnant un flot valide de valeur maximum)
+    f := 0 (le flot initial est nul)
+    F := array(1..n, 1..n) (la capacité résiduelle de u à v est C[u,v] - F[u,v])
+    forever
+        m, P := BreadthFirstSearch(C, E, s, t, F)
+        if m = 0
+            break
+        f := f + m
+        (Backtrack et noter le flot)
+        v := t
+        while v != s
+            u := P[v]
+            F[u,v] := F[u,v] + m
+            F[v,u] := F[v,u] - m
+            v := u
+    return (f, F)
+ */
+
+int <NAME>_maxflow(<NAME>_graph_t *graph, <TYPE> source, <TYPE> target,
+		   double*** localflows, double *flow) {
+
+
+  /* Step 0 : max index of vertices */
+  int maxIndex = INT_MIN;
+  generic_list_elmt_t *vindex = generic_list_head (&(graph->adjlists));
+  for (; vindex != NULL; vindex = generic_list_next (vindex)) {
+    <NAME>_adjlist_t* node = generic_list_data (vindex);
+    if (node->vertex > maxIndex) {
+      maxIndex = node->vertex;
+    }
+  }
+
+  if (maxIndex == INT_MIN) {
+    return -1;
+  }
+
+  *flow = 0.0;
+  *localflows = calloc ((maxIndex+1), sizeof(double*));
+  if (*localflows == NULL) {
+    return -1;
+  }
+  for (int i = 0; i < maxIndex+1; i++) {
+    (*localflows)[i] = calloc ((maxIndex+1), sizeof(double));
+    if ( (*localflows)[i] == NULL) {
+      return -1;
+    }
+  }
+
+  while (1) {
+
+    double capacity;
+    <TYPE>* parents = malloc ((maxIndex+1) * sizeof(<TYPE>));
+    if (parents == NULL) {
+      /* Should free memory */
+      return -1;
+    }
+
+    maxflow_bfs (graph, source, target, *localflows, &capacity, parents, (maxIndex+1));
+    if (capacity == 0.0) {
+      break;
+    }
+    *flow += capacity;
+
+    /* Update local flows */
+    int v = target;
+    printf ("Chemin ameliorant: ");
+    while (v != source) {
+      printf ("%d -> ", v);
+      int u = parents[v];
+      (*localflows)[u][v] += capacity;
+      (*localflows)[v][u] -= capacity;
+      v = u;
+    }
+    printf ("%d\n", source);
+
+  }
+
+  return 0;
+}
