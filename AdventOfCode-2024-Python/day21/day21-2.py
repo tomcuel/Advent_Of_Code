@@ -1,0 +1,1 @@
+# not successful to pass the brut force test, since it requires a lot of time to compute, and I didn't find a way to optimize enough the previous code
