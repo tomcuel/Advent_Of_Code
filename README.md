@@ -18,10 +18,10 @@
 ---
 
 ## Advent of Code 2025
-Repository:  
-Language: 
-Notes:  
-🔗
+Repository: [AdventOfCode-2025-Python](./AdventOfCode-2025-Python)  
+Language: **Python** 🐍  
+Notes: Just getting started  
+🔗 [Advent of Code 2025 website](https://adventofcode.com/2025)
 
 ---
 
