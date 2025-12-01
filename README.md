@@ -18,17 +18,17 @@
 ---
 
 ## Advent of Code 2025
-Repository:  
-Language: 
-Notes:  
-🔗
+Repository: [AdventOfCode-2025-Python](./AdventOfCode-2025-Python)  
+Language: **Python** 🐍  
+Notes: Done (only 12 puzzles available this year)  
+🔗 [Advent of Code 2025 website](https://adventofcode.com/2025)
 
 ---
 
 ## Advent of Code 2024
 Repository: [AdventOfCode-2024-Python](./AdventOfCode-2024-Python)  
 Language: **Python** 🐍  
-Notes: I didn’t solve everything, missing solutions: 17p2, 21p2, 24p2.  
+Notes: I didn’t solve everything, missing solutions: 17p2, 21p2, 24p2  
 🔗 [Advent of Code 2024 website](https://adventofcode.com/2024)
 
 ---
@@ -44,7 +44,7 @@ Notes: First one made
 ## Advent of Code 2022
 Repository: [AdventOfCode-2022-Python](./AdventOfCode-2022-Python)  
 Language: **Python** 🐍  
-Notes: To get back to Python, everything hasn't been done
+Notes: To get back to Python, everything hasn't been done  
 🔗 [Advent of Code 2022 website](https://adventofcode.com/2022)
 
 ---
@@ -52,7 +52,7 @@ Notes: To get back to Python, everything hasn't been done
 ## Advent of Code 2021
 Repository: [AdventOfCode-2021-C-libin103](./AdventOfCode-2021-C-libin103)  
 Language: **C** 💻  
-Notes: Going further in C, while also using a school lesson library sometimes
+Notes: Going further in C, while also using a school lesson library sometimes  
 🔗 [Advent of Code 2021 website](https://adventofcode.com/2021)
 
 ---
